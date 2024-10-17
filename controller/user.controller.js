@@ -7,7 +7,8 @@ import { Club } from "../model/club.model.js";
 import sendEmailViaResend from "../helper/emailSend.js";
 import cron from "node-cron";
 import mongoose from "mongoose";
-
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 export const createUser = asyncHandler(async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -270,3 +271,43 @@ export const getUserById = asyncHandler(async (req, res) => {
 export const createUserWithoutVerification = asyncHandler(async (req, res) => {
   // add logic here
 })
+
+
+
+export const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+
+  if (!email || !password) {
+    throw new apiError(400, "Email and password are required.");
+  }
+
+  console.log(email,password)
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new apiError(404, "User not found.");
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new apiError(401, "Invalid credentials.");
+  }
+  if (!user.isAuthenticated) {
+    return res.status(401).json(new apiResponse(401, null, "User not verified."));
+  }
+  if (!user.isInClub) {
+    return res.status(401).json(new apiResponse(401, null, "User is not present in any club."));
+  }
+  const token = jwt.sign(
+    { _id: user._id, email: user.email },
+    process.env. ACCESS_TOKEN_SECRET_USER    ,
+    { expiresIn: "1d" }  
+  );
+
+
+  res.cookie("userT", token, { httpOnly: true, secure: true, maxAge: 24 * 60 * 60 * 1000 }); 
+
+
+  return res.status(200).json(new apiResponse(200, { token }, "User logged in successfully."));
+});
+

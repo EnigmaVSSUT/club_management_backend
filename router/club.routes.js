@@ -10,7 +10,7 @@ import {
   getOneClub,
   removeMember,
   superAccess,
-  updateClub,
+  updateClub,loginAdmin
 } from "../controller/club.controller.js";
 import verifyClubAuth from "../middleware/club.auth.middleware.js";
 import verifyClubUserAuth from "../middleware/club.user.auth.middleware.js";
@@ -24,6 +24,7 @@ router.route("/admin/create/vs").post(createClub);
 
 // authentication middleware - for admin
 
+router.route("/admin/login/vs").post(loginAdmin);
 // update club details
 router.route("/admin/update").put(verifyClubAuth, updateClub);
 
