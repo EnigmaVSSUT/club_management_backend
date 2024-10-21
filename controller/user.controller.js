@@ -272,5 +272,71 @@ export const getUserById = asyncHandler(async (req, res) => {
 });
 
 export const createUserWithoutVerification = asyncHandler(async (req, res) => {
-  // add logic here
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const {
+      regdNo,
+      email,
+      password,
+      fullName,
+      gender,
+      yearOfGraduation,
+      domain,
+      photo,
+      skills,
+      githubLink,
+      linkedinLink,
+    } = req.body;
+
+    // Validate required fields
+    emptyFieldValidation([regdNo, email, password, fullName]);
+
+    // Check if user already exists based on email or regdNo
+    const existingUser = await User.findOne({
+      $or: [{ email }, { regdNo }],
+    }).session(session);
+
+    if (existingUser) {
+      throw new apiError(409, "User already exists. Please login.");
+    }
+
+    // Create the user without any verification logic
+    const user = await User.create(
+      [
+        {
+          regdNo,
+          email,
+          password,
+          fullName,
+          gender,
+          yearOfGraduation,
+          domain,
+          photo,
+          skills,
+          githubLink,
+          linkedinLink,
+          isAuthenticated: true, // User is marked as authenticated directly
+        },
+      ],
+      { session }
+    );
+
+    // Commit the transaction after successful creation
+    await session.commitTransaction();
+
+    // Respond with success
+    res.status(201).json(
+      new apiResponse(201, user, "User created successfully without verification")
+    );
+  } catch (error) {
+    // Abort transaction in case of any errors
+    await session.abortTransaction();
+    console.error(error);
+    res.status(500).json({ message: "An error occurred." });
+  } finally {
+    // End session
+    session.endSession();
+  }
 });
