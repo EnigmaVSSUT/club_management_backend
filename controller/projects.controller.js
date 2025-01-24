@@ -2,7 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import Project from "../model/project.model.js";
 import apiError from "../utils/apiError.js";
 import { Club } from "../model/club.model.js";
-
+import apiResponse from "../utils/apiResponse.js";
 
 export const createProject = asyncHandler(async (req, res) => {
     const clubId = req.club._id;
@@ -35,10 +35,10 @@ export const createProject = asyncHandler(async (req, res) => {
 export const AllProjects = asyncHandler(async (req, res, next) => {
  
   
-    const Project = await Project.find();
+  const project = await Project.find();
 
 
-    if (!Project || Project.length === 0) {
+    if (!project || project.length === 0) {
       throw new apiError(404, [], "There is no Project in this club.");
     }
 
@@ -47,7 +47,7 @@ export const AllProjects = asyncHandler(async (req, res, next) => {
     .json(
       new apiResponse(
         200,
-        Project,
+        project,
         " Projects retrieved successfully."
       )
     );
