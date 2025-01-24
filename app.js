@@ -6,7 +6,7 @@ import userRouter from "./router/user.routes.js";
 import clubRouter from "./router/club.routes.js";
 import achievementRouter from "./router/achievements.routes.js";
 import eventsRouter from "./router/events.routes.js";
-
+import projectsRouter from "./router/projects.routes.js";
 const app = express();
 
 app.use(
@@ -26,5 +26,5 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/clubs", clubRouter);
 app.use("/api/v1/achievements", achievementRouter);
 app.use("/api/v1/events", eventsRouter);
-
+app.use("/api/v1/projects", projectsRouter);
 export default app;
